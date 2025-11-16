@@ -19,6 +19,7 @@
 
 using namespace std;
 
+
 // (dr, dc, dir_char, can_move, reconstruct_path, runBFS は変更なし)
 int dr[] = { -1, 1, 0, 0, 0 }; // U, D, L, R, S
 int dc[] = { 0, 0, -1, 1, 0 };
