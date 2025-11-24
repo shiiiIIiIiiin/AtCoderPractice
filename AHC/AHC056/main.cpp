@@ -20,10 +20,11 @@
 using namespace std;
 
 
-// (dr, dc, dir_char, can_move, reconstruct_path, runBFS は変更なし)
 int dr[] = { -1, 1, 0, 0, 0 }; // U, D, L, R, S
 int dc[] = { 0, 0, -1, 1, 0 };
 char dir_char[] = { 'U', 'D', 'L', 'R', 'S' };
+int opposite_dir[] = { 1, 0, 3, 2, 4 };
+
 bool can_move(int r, int c, int dir, int N, const std::vector<std::string>& v, const std::vector<std::string>& h) {
     if (dir == 0) return r > 0 && h[r - 1][c] == '0';
     if (dir == 1) return r < N - 1 && h[r][c] == '0';
@@ -31,6 +32,8 @@ bool can_move(int r, int c, int dir, int N, const std::vector<std::string>& v, c
     if (dir == 3) return c < N - 1 && v[r][c] == '0';
     return false;
 }
+
+// 経路復元 (map<pair, pair> 版)
 vector<pair<int, int>> reconstruct_path(
     const map<pair<int, int>, pair<int, int>>& parent,
     pair<int, int> start, pair<int, int> end
@@ -46,6 +49,8 @@ vector<pair<int, int>> reconstruct_path(
     reverse(path.begin(), path.end());
     return path;
 }
+
+// 1. 通常のBFS (最短経路)
 pair<int, map<pair<int, int>, pair<int, int>>> runBFS(
     int N, pair<int, int> start, pair<int, int> end,
     const vector<string>& v, const vector<string>& h
@@ -74,312 +79,69 @@ pair<int, map<pair<int, int>, pair<int, int>>> runBFS(
     return { dist[end.first][end.second], parent };
 }
 
-// --- 戦略出力用の構造体 ---
-struct Rule { int c, q, A, S; char D; };
-struct StrategyOutput {
-    int C, Q, M;
-    vector<vector<int>> board;
-    vector<Rule> rules;
-    map<pair<int, int>, Rule> rule_map;
-    // (シミュレーション開始状態は run_simulation 側で t=0 から計算)
-};
-
-// --- 状態圧縮のためのグローバル変数 ---
-vector<int> behavior_id_of_t; 
-map<tuple<int, int, int>, int> memo_behavior_to_id; 
-int next_behavior_id;
-vector<int> D_map_global;
-vector<int> t_next_visit_global;
-int X_global; 
-int t_last_stop_global; 
-bool use_random_walk_global; 
-
-// (get_behavior_id は変更なし)
-int get_behavior_id(int t) {
-    if (t > X_global) return 0; 
-    if (behavior_id_of_t[t] != -1) return behavior_id_of_t[t]; 
-
-    tuple<int, int, int> behavior;
-    if (use_random_walk_global && t == X_global) {
-        int D = 0; int b_id_next = 0; int b_id_next_visit = 0; 
-        behavior = { D, b_id_next, b_id_next_visit };
-    } else if (!use_random_walk_global && t == X_global) {
-        int D = 4; int b_id_next = 0; int b_id_next_visit = 0; 
-        behavior = { D, b_id_next, b_id_next_visit };
-    } else {
-        int b_id_next = get_behavior_id(t + 1);
-        int next_t = t_next_visit_global[t];
-        int b_id_next_visit;
-        if (next_t == -1 || next_t > X_global) {
-            b_id_next_visit = 0; 
-        } else {
-            b_id_next_visit = get_behavior_id(next_t);
-        }
-        int D = D_map_global[t]; 
-        behavior = { D, b_id_next, b_id_next_visit };
-    }
-    auto it = memo_behavior_to_id.find(behavior);
-    if (it != memo_behavior_to_id.end()) {
-        return behavior_id_of_t[t] = it->second;
-    }
-    int new_b_id = next_behavior_id++;
-    memo_behavior_to_id[behavior] = new_b_id;
-    return behavior_id_of_t[t] = new_b_id;
-}
-
-
-/**
- * @brief 戦略 A または B を生成する
- */
-StrategyOutput generate_strategy(
-    bool use_random_walk, int N, long long int X, 
-    const vector<pair<int, int>>& full_path,
-    const vector<string>& v, const vector<string>& h,
-    int K 
-) {
-    // --- 1. グローバル変数を初期化・設定 ---
-    memo_behavior_to_id.clear();
-    next_behavior_id = 0; 
-    use_random_walk_global = use_random_walk;
-
-    if (use_random_walk) {
-        X_global = t_last_stop_global; 
-    } else {
-        X_global = X; 
-    }
-    behavior_id_of_t.assign(X_global + 2, -1); 
-
-    // --- 2. Phase 1: 状態圧縮 ---
-    get_behavior_id(0); 
-    int b_id_0 = (behavior_id_of_t.empty() ? 0 : behavior_id_of_t[0]);
-    int b_id_unused = 0; 
-    int M = next_behavior_id; 
-
-    // --- 3. Phase 2: 再マッピング & C, Q 計算 ---
-    map<int, int> b_id_to_s_id; 
-    map<int, int> s_id_to_b_id; 
-    int current_s_id = 0; 
-    b_id_to_s_id[b_id_unused] = current_s_id;
-    s_id_to_b_id[current_s_id] = b_id_unused;
-    current_s_id++;
-    if (b_id_0 != b_id_unused) {
-        b_id_to_s_id[b_id_0] = current_s_id;
-        s_id_to_b_id[current_s_id] = b_id_0;
-        current_s_id++;
-    }
-    for (int b_id = 0; b_id < M; ++b_id) {
-        if (b_id_to_s_id.find(b_id) == b_id_to_s_id.end()) {
-            b_id_to_s_id[b_id] = current_s_id;
-            s_id_to_b_id[current_s_id] = b_id;
-            current_s_id++;
-        }
-    }
-    int C = max(2, (int)ceil(sqrt(M))); 
-    int Q = max(1, (int)ceil((double)M / C));
-
-    // --- 4. Phase 3: 初期盤面 ---
-    vector<vector<int>> initial_board(N, vector<int>(N, 0)); 
-    map<pair<int, int>, bool> has_been_set;
-    for (int t = 0; t <= X_global; ++t) { 
-        pair<int, int> pos = full_path[t];
-        if (!has_been_set[pos]) {
-            int b_id = behavior_id_of_t[t]; 
-            int s_id = b_id_to_s_id[b_id];  
-            initial_board[pos.first][pos.second] = s_id % C; 
-            has_been_set[pos] = true;
-        }
-    }
-
-    // --- 5. Phase 4: 遷移規則 ---
-    map<int, tuple<int, int, int>> b_id_to_behavior; 
-    for (auto const& [behavior, b_id] : memo_behavior_to_id) {
-        b_id_to_behavior[b_id] = behavior;
-    }
-    
-    StrategyOutput output;
-    output.C = C; output.Q = Q; output.M = M;
-    output.board = initial_board; 
-
-    for (int s_id = 0; s_id < M; ++s_id) { 
-        int c = s_id % C;
-        int q = s_id / C;
-        int b_id = s_id_to_b_id[s_id]; 
-        auto [D_idx, b_id_next, b_id_next_visit] = b_id_to_behavior[b_id];
-        int s_id_next = b_id_to_s_id[b_id_next];
-        int s_id_next_visit = b_id_to_s_id[b_id_next_visit];
-        int A = s_id_next_visit % C; 
-        int S = s_id_next / C;       
-        char D = dir_char[D_idx];
-        
-        Rule rule = {c, q, A, S, D};
-        output.rules.push_back(rule);
-        output.rule_map[{c, q}] = rule;
-    }
-
-    // --- 6. (削除) シミュレーション開始状態は不要 ---
-    
-    // --- 7. (★修正) 戦略Aのみ、終点とUNUSEDルールを「激しく」変更 ---
-    if (use_random_walk_global && K > 1 && M > 1 && b_id_0 != 0 && b_id_to_s_id.count(b_id_0) && behavior_id_of_t.size() > X_global) {
-        
-        int s_id_t0 = b_id_to_s_id.at(b_id_0);
-        int c_t0 = s_id_t0 % C;
-        int q_t0 = s_id_t0 / C;
-
-        // 1. 終点 (K-2到達時) のルール (s_id_X) を変更
-        int b_id_X = behavior_id_of_t[X_global];
-        int s_id_X = b_id_to_s_id.at(b_id_X);
-        int c_X = s_id_X % C;
-        int q_X = s_id_X / C;
-
-        if (output.rule_map.count({c_X, q_X})) {
-             Rule& rule_X = output.rule_map.at({c_X, q_X});
-             rule_X.A = c_t0; 
-             rule_X.S = q_t0; 
-             rule_X.D = 'R';  
-        }
-
-        // 2. UNUSED (s_id=0) のルール (c=0, q=0) を変更
-        if (output.rule_map.count({0, 0})) {
-            Rule& rule_unused = output.rule_map.at({0, 0});
-            rule_unused.A = c_t0; 
-            rule_unused.S = q_t0; 
-            rule_unused.D = 'L';  
-        }
-        
-        output.rules.clear();
-        for(auto const& [key, val] : output.rule_map) {
-            output.rules.push_back(val);
-        }
-    }
-
-    return output;
-}
-
-/**
- * @brief 戦略のフルシミュレーションを実行 (★ t=0 から T-1 まで)
- * (★ V=K (順序通り) をチェック)
- */
-bool run_simulation(
-    const StrategyOutput& strategy,
-    int N, int T, int K,
-    const vector<pair<int, int>>& target, // K個の目的地リスト
-    const vector<string>& v, const vector<string>& h
-) {
-    vector<vector<int>> current_board = strategy.board; // t=0 の初期盤面
-    int curr_y = target[0].first;
-    int curr_x = target[0].second;
-    int curr_q = 0; // t=0 の q
-
-    int next_target_idx = 0; // ★ 次に目指すべき目的地のインデックス
-    int V = 0; // ★ 達成した目的地 (V=K がゴール)
-
-    // t=0 から T-1 まで T ステップ実行
-    for (int t = 0; t < T; ++t) { 
-        
-        // ★ 順序通りの目的地チェック
-        if (next_target_idx < K) { // ★ 修正: K個すべて見つけるまで
-            if (curr_y == target[next_target_idx].first && 
-                curr_x == target[next_target_idx].second) {
-                
-                V++; // 達成
-                next_target_idx++; // 次の目的地へ
-                
-                if (V == K) {
-                    return true; // K個すべて達成
-                }
-            }
-        }
-        
-        // (★ V=K チェックは上記に移動)
-
-        int c = current_board[curr_y][curr_x];
-        
-        if (strategy.rule_map.find({c, curr_q}) == strategy.rule_map.end()) {
-             break; // ルールが存在しない (行動終了)
-        }
-        
-        Rule rule = strategy.rule_map.at({c, curr_q});
-
-        current_board[curr_y][curr_x] = rule.A;
-        curr_q = rule.S;
-        
-        int dir_idx = 0;
-        if (rule.D == 'D') dir_idx = 1;
-        else if (rule.D == 'L') dir_idx = 2;
-        else if (rule.D == 'R') dir_idx = 3;
-        else if (rule.D == 'S') dir_idx = 4;
-        
-        if (dir_idx < 4 && can_move(curr_y, curr_x, dir_idx, N, v, h)) {
-            curr_y += dr[dir_idx];
-            curr_x += dc[dir_idx];
-        }
-    }
-    
-    // Tステップ終了時の最終チェック
-    if (next_target_idx < K) { // ★ 修正
-        if (curr_y == target[next_target_idx].first && 
-            curr_x == target[next_target_idx].second) {
-            V++;
-        }
-    }
-
-    return (V == K);
-}
-
-/**
- * @brief 最終的な戦略を出力
- */
-void print_strategy(const StrategyOutput& strategy) {
-    cout << strategy.C << " " << strategy.Q << " " << strategy.M << endl;
-    for (const auto& row : strategy.board) {
-        for (size_t j = 0; j < row.size(); ++j) { 
-            cout << row[j] << (j == row.size() - 1 ? "" : " "); 
-        }
-        cout << endl;
-    }
-    for (const auto& rule : strategy.rules) {
-        cout << rule.c << " " << rule.q << " " << rule.A << " " << rule.S << " " << rule.D << endl;
-    }
-}
-
 
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
     int N, K, T; cin >> N >> K >> T;
-    vector<string> v(N); vector<string> h(N - 1);
+
+    vector<string> v(N);
+    vector<string> h(N - 1);
+
     for (int i = 0; i < N; i++) cin >> v[i];
     for (int i = 0; i < N - 1; i++) cin >> h[i];
+
     vector<pair<int, int>> target(K);
     for (int i = 0; i < K; i++) cin >> target[i].first >> target[i].second;
 
-    // --- Phase 0: オフライン計算 ---
-    vector<pair<int, int>> full_path; 
+    // --- Phase 0: C*Q=T 戦略 (オフライン計算) ---
+
+    // 0a. 全経路 (full_path) と移動 (D_map) を計算
+    // ★バグ修正: full_path と D_map の生成ロジックを修正
+
+    vector<pair<int, int>> full_path; // t=0..X の座標リスト (サイズ X+1)
     full_path.push_back(target[0]);
-    long long X = 0; 
+
+    vector<int> D_map; // t=0..X-1 の移動方向リスト (サイズ X)
+
+    long long X = 0; // 最短総ステップ数
     bool reachable_bfs = true;
-    vector<int> t_at_target(K, 0); 
-    
-    for (int k = 0; k < K - 1; k++) { 
-        pair<int, int> start = target[k]; pair<int, int> end = target[k + 1];
+
+    for (int k = 0; k < K - 1; k++) {
+        pair<int, int> start = target[k];
+        pair<int, int> end = target[k + 1];
         auto [steps, parent] = runBFS(N, start, end, v, h);
-        if (steps == -1) { reachable_bfs = false; break; }
+
+        if (steps == -1) { // 到達不能
+            reachable_bfs = false;
+            break;
+        }
+
         X += steps;
-        t_at_target[k + 1] = X; 
         auto path = reconstruct_path(parent, start, end);
+
+        // path は [start, p1, p2, ..., end]
         for (size_t i = 0; i < path.size() - 1; ++i) {
-            pair<int, int> p1 = path[i]; pair<int, int> p2 = path[i + 1];
-            int dir_idx = 0; 
-            if (p2.first - p1.first == 1) dir_idx = 1; 
-            else if (p2.second - p1.second == -1) dir_idx = 2; 
-            else if (p2.second - p1.second == 1) dir_idx = 3; 
-            D_map_global.push_back(dir_idx);
+            pair<int, int> p1 = path[i];
+            pair<int, int> p2 = path[i + 1];
+
+            // D_map (t=0..X-1)
+            int dir_idx = 0; // U
+            if (p2.first - p1.first == 1) dir_idx = 1; // D
+            else if (p2.second - p1.second == -1) dir_idx = 2; // L
+            else if (p2.second - p1.second == 1) dir_idx = 3; // R
+            D_map.push_back(dir_idx);
+
+            // full_path (t=1..X)
             full_path.push_back(p2);
         }
     }
+    // ★バグ修正ここまで (full_path.size() == X+1, D_map.size() == X が保証される)
 
-    if (reachable_bfs == false && K > 1) { 
+
+    if (reachable_bfs == false || X > T) {
+        // (V<K になる)
         cout << 1 << " " << 1 << " " << 0 << endl;
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) cout << 0 << (j == N - 1 ? "" : " ");
@@ -388,74 +150,261 @@ int main() {
         return 0;
     }
 
-    // 0b. t_next_visit
+    // 0b. 「次に訪れるt」を計算 (t_next_visit)
     map<pair<int, int>, vector<int>> visits_at_coord;
-    for (int t = 0; t <= X; ++t) visits_at_coord[full_path[t]].push_back(t);
-    t_next_visit_global.resize(X + 1); 
+    for (int t = 0; t <= X; ++t) {
+        visits_at_coord[full_path[t]].push_back(t);
+    }
+
+    vector<int> t_next_visit(X + 1); // t_next_visit[t] = tの次にそのマスを訪れるステップ
     for (int t = 0; t <= X; ++t) {
         pair<int, int> coord = full_path[t];
         auto& visits = visits_at_coord[coord];
+        // visits (ソート済み) の中で t を二分探索
         auto it = lower_bound(visits.begin(), visits.end(), t);
         if (it != visits.end() && next(it) != visits.end()) {
-            t_next_visit_global[t] = *next(it); 
-        } else {
-            t_next_visit_global[t] = -1; 
+            t_next_visit[t] = *next(it); // 次の訪問ステップ
+        }
+        else {
+            t_next_visit[t] = -1; // これが最後の訪問
         }
     }
 
-    if (K == 1) t_last_stop_global = 0;
-    else t_last_stop_global = t_at_target[K-2];
+    // --- Phase 1: C, Q, M を計算 ---
+    int C_base = ceil(sqrt(X + 1));
+    int Q = ceil((double)(X + 1) / C_base);
+    int C = C_base; // +1 は「もう使わないマス」用の色 (C_unused)
+    int C_unused = 0;
 
-    // --- ★ 戦略分岐 ---
-    bool use_strategy_A = false;
-    
-    // --- 戦略B (確実) のシミュレーション ---
-    StrategyOutput strategy_B = generate_strategy(false, N, X, full_path, v, h, K);
-    bool success_B = run_simulation(
-        strategy_B, N, T, K,
-        target, // 目的地リスト (t=0 の開始位置も含む)
-        v, h
-    );
+    int M = X + 1; // t=0..X の (X+1) 個のルール
 
-    if (K > 1) {
-        // --- 戦略A (でたらめ) のシミュレーション ---
-        StrategyOutput strategy_A = generate_strategy(true, N, X, full_path, v, h, K);
-        bool success_A = false;
-        
-        // (t=0 の b_id と K-2 の b_id が同じ場合、
-        //  ルール上書きで自己ループになりシミュレーションが壊れるので除外)
-        if (strategy_A.M > 1 && behavior_id_of_t.size() > t_last_stop_global && behavior_id_of_t[0] != behavior_id_of_t[t_last_stop_global]) {
-            
-            success_A = run_simulation(
-                strategy_A, N, T, K,
-                target, // 目的地リスト
-                v, h
-            );
-        }
+    // --- Phase 3: 遷移規則 ---
+    // Build simple signatures per t and group them; then apply a frequency-weighted greedy merge
+    // to reduce the number of representative groups L, and set C~=sqrt(L), Q~=sqrt(L).
 
-        // --- 判定 ---
-        if (success_A) {
-            use_strategy_A = true; 
-        } else if (success_B) {
-            use_strategy_A = false;
-        } else {
-            // 両方失敗 (X > T など)
-            use_strategy_A = true;
-        }
-    } else {
-        // K=1 なら B (停止) しかありえない
-        use_strategy_A = false;
+    // build signature id per t
+    struct Sig { int r,c,d,nd; };
+    auto make_key = [&](int r,int c,int d,int nd)->long long {
+        return ((long long)r<<48) ^ ((long long)c<<32) ^ ((long long)d<<16) ^ (long long)(nd+128);
+    };
+    unordered_map<long long,int> sig_map;
+    vector<int> t_to_sig(X+1,-1);
+    vector<long long> sig_keys;
+    int next_sig = 0;
+    int cap_delta = 10;
+    for (int t = 0; t <= X; ++t) {
+        auto p = full_path[t];
+        int d = (t < (int)D_map.size()) ? D_map[t] : 4;
+        int nd = (t_next_visit[t] == -1) ? -1 : min(cap_delta, t_next_visit[t]-t);
+        long long k = make_key(p.first, p.second, d, nd);
+        auto it = sig_map.find(k);
+        if (it == sig_map.end()) {
+            sig_map[k] = next_sig++;
+            sig_keys.push_back(k);
+            t_to_sig[t] = next_sig-1;
+        } else t_to_sig[t] = it->second;
+    }
+    int L = max(1, next_sig);
+
+    // rep t and freq
+    vector<int> rep_t(L, -1), freq(L,0);
+    for (int t = 0; t <= X; ++t) {
+        int s = t_to_sig[t];
+        if (rep_t[s] == -1) rep_t[s] = t;
+        freq[s]++;
     }
 
-    // --- 最終出力 ---
-    if (use_strategy_A) {
-      //cout<<"d"<<endl;
-      StrategyOutput final_strategy_A = generate_strategy(true, N, X, full_path, v, h, K); 
-      print_strategy(final_strategy_A);
+    // basic group struct
+    struct Group { int gid; int rep_t; int r,c; int d; int nd; int freq; bool alive; };
+    vector<Group> groups;
+    groups.reserve(L*2+10);
+    for (int s = 0; s < L; ++s) {
+        int t = rep_t[s];
+        int r=0,cpos=0,d=4,nd=-1;
+        if (t>=0) { r = full_path[t].first; cpos = full_path[t].second; d = (t<(int)D_map.size())?D_map[t]:4; nd = (t_next_visit[t]==-1)?-1:min(cap_delta,t_next_visit[t]-t); }
+        groups.push_back({s, rep_t[s], r, cpos, d, nd, freq[s], true});
+    }
+
+    // target reduced L
+    int curL = L;
+    int targetL = max(1, L/3);
+
+    // helper cost
+    auto cost_between = [&](int a,int b)->double{
+        Group &A = groups[a]; Group &B = groups[b];
+        double posd = abs(A.r - B.r) + abs(A.c - B.c);
+        double ddir = (A.d==B.d)?0.0:1.0;
+        double dnd = (A.nd==B.nd)?0.0: (double)abs(A.nd - B.nd)/ (cap_delta+1);
+        double base = 0.5*posd + 1.0*ddir + 0.2*dnd;
+        double freqnorm = max(1, A.freq + B.freq);
+        return base / freqnorm;
+    };
+
+    // spatial buckets
+    unordered_map<long long, vector<int>> buckets;
+    auto pos_key = [&](int r,int c){ return ((long long)r<<32) ^ (unsigned long long)c; };
+    for (int i = 0; i < (int)groups.size(); ++i) if (groups[i].alive) buckets[pos_key(groups[i].r, groups[i].c)].push_back(i);
+
+    // candidate pq
+    using Item = tuple<double,int,int>;
+    struct Cmp { bool operator()(Item const&a, Item const&b) const { return get<0>(a) > get<0>(b); } };
+    priority_queue<Item, vector<Item>, Cmp> pq;
+
+    int L_allpairs_thresh = 1000;
+    if (L <= L_allpairs_thresh) {
+        for (int i = 0; i < L; ++i) for (int j = i+1; j < L; ++j) pq.emplace(cost_between(i,j), i, j);
     } else {
-      // (strategy_B はシミュレーション時に生成済み)
-      //cout<<"k"<<endl;
-      print_strategy(strategy_B);
+        int R = 3;
+        for (int i = 0; i < L; ++i) if (groups[i].alive) {
+            for (int drd=-R; drd<=R; ++drd) for (int dcd=-R; dcd<=R; ++dcd) {
+                long long k = pos_key(groups[i].r+drd, groups[i].c+dcd);
+                auto it = buckets.find(k); if (it==buckets.end()) continue;
+                for (int j : it->second) if (j>i) pq.emplace(cost_between(i,j), i, j);
+            }
+        }
+    }
+
+    // mapping of sig->current group id
+    vector<int> curGroup(L);
+    for (int s = 0; s < L; ++s) curGroup[s] = s;
+
+    // merge loop (naive updates)
+    while (curL > targetL && !pq.empty()) {
+        auto [cst, ga, gb] = pq.top(); pq.pop();
+        // find current representative group ids
+        int ra = -1, rb = -1;
+        if (ga < (int)groups.size()) ra = ga; else continue;
+        if (gb < (int)groups.size()) rb = gb; else continue;
+        if (!groups[ra].alive || !groups[rb].alive) continue;
+        if (ra == rb) continue;
+        // merge ra and rb
+        Group A = groups[ra], B = groups[rb];
+        Group G;
+        G.gid = groups.size();
+        G.rep_t = (A.freq >= B.freq) ? A.rep_t : B.rep_t;
+        int totf = A.freq + B.freq;
+        G.r = (A.r*A.freq + B.r*B.freq)/max(1, totf);
+        G.c = (A.c*A.freq + B.c*B.freq)/max(1, totf);
+        G.d = (A.freq >= B.freq) ? A.d : B.d;
+        G.nd = (A.nd>=0?A.nd:0) + (B.nd>=0?B.nd:0);
+        G.freq = totf;
+        G.alive = true;
+        // mark old dead
+        groups[ra].alive = false; groups[rb].alive = false;
+        groups.push_back(G);
+        int newgid = G.gid;
+        // update curGroup for all signatures: map old groups to newgid
+        for (int s = 0; s < L; ++s) {
+            if (curGroup[s] == ra || curGroup[s] == rb) curGroup[s] = newgid;
+        }
+        // add to buckets
+        buckets[pos_key(G.r,G.c)].push_back(newgid);
+        // push neighbor candidates
+        int R2 = 3;
+        for (int drd=-R2; drd<=R2; ++drd) for (int dcd=-R2; dcd<=R2; ++dcd) {
+            long long k = pos_key(G.r+drd, G.c+dcd);
+            auto it = buckets.find(k); if (it==buckets.end()) continue;
+            for (int j : it->second) if (j!=newgid && groups[j].alive) {
+                double cc = cost_between(j,newgid);
+                pq.emplace(cc, j, newgid);
+            }
+        }
+        curL--;
+    }
+
+    // build merged index mapping
+    unordered_map<int,int> mergedIdx;
+    int mcnt = 0;
+    for (int i = 0; i < (int)groups.size(); ++i) if (groups[i].alive) mergedIdx[i] = mcnt++;
+    int Lp = max(1, mcnt);
+
+    // rep t per merged
+    vector<int> rep_merged(Lp, -1);
+    for (int s = 0; s < L; ++s) {
+        int gid = curGroup[s];
+        if (mergedIdx.find(gid) == mergedIdx.end()) continue;
+        int mid = mergedIdx[gid];
+        if (rep_merged[mid] == -1) rep_merged[mid] = rep_t[s];
+    }
+
+    int C2 = max(1, (int)floor(sqrt((double)Lp)));
+    int Q2 = (Lp + C2 - 1) / C2;
+    int Cout = C2 + 1;
+    int C_unused2 = C2;
+
+    cout << Cout << " " << Q2 << " " << (Q2 * Cout) << endl;
+
+    // --- build initial_board for output (recreate but do not print earlier) ---
+    vector<vector<int>> initial_board(N, vector<int>(N, C_unused));
+    map<pair<int, int>, bool> has_been_set2;
+    for (int t = 0; t <= X; ++t) {
+        pair<int,int> pos = full_path[t];
+        if (!has_been_set2[pos]) {
+            initial_board[pos.first][pos.second] = t % C_base;
+            has_been_set2[pos] = true;
+        }
+    }
+    vector<vector<int>> board_out = initial_board;
+    for (int s = 0; s < L; ++s) {
+        int t = rep_t[s]; if (t < 0) continue;
+        int gid = curGroup[s]; if (mergedIdx.find(gid) == mergedIdx.end()) continue;
+        int mid = mergedIdx[gid]; auto p = full_path[t]; board_out[p.first][p.second] = mid % C2;
+    }
+    for (int i = 0; i < N; ++i) {
+        for (int j = 0; j < N; ++j) cout << board_out[i][j] << (j==N-1?"":" ");
+        cout << endl;
+    }
+
+    // output rules: for each merged index => representative t
+    vector<int> rep_final = rep_merged;
+    for (int q = 0; q < Q2; ++q) {
+        for (int c = 0; c < Cout; ++c) {
+            if (c == C_unused2) {
+                // unused color column: stop/idle rule
+                cout << c << " " << q << " " << C_unused2 << " " << q << " " << dir_char[4] << endl;
+                continue;
+            }
+            int idx = q * C2 + c;
+            if (idx >= Lp) { cout << c << " " << q << " " << C_unused2 << " " << q << " " << dir_char[4] << endl; continue; }
+            int t = rep_final[idx];
+            if (t < 0) { cout << c << " " << q << " " << C_unused2 << " " << q << " " << dir_char[4] << endl; continue; }
+            int A,Snew,D;
+            if (t == X) { A = C_unused2; Snew = q; D = 4; }
+            else {
+                int nxt = t_next_visit[t];
+                if (nxt == -1) A = C_unused2;
+                else {
+                    int s_next = t_to_sig[nxt]; int gid = curGroup[s_next]; int mid = (mergedIdx.find(gid)==mergedIdx.end())?0:mergedIdx[gid]; A = mid % C2;
+                }
+                int s_next = (t_next_visit[t]==-1)?-1:t_to_sig[t_next_visit[t]];
+                if (s_next == -1) Snew = q;
+                else { int gid = curGroup[s_next]; int mid = (mergedIdx.find(gid)==mergedIdx.end())?0:mergedIdx[gid]; Snew = mid / C2; }
+                D = (t < (int)D_map.size()) ? D_map[t] : 4;
+            }
+
+            // SAFETY: ensure the move D is legal on the given map; if not, make it a Stop
+            auto can_move_char = [&](int rr,int cc,char Dc)->bool{
+                if (Dc=='S') return true;
+                if (Dc=='U') return rr>0 && h[rr-1][cc]=='0';
+                if (Dc=='D') return rr<N-1 && h[rr][cc]=='0';
+                if (Dc=='L') return cc>0 && v[rr][cc-1]=='0';
+                if (Dc=='R') return cc<N-1 && v[rr][cc]=='0';
+                return false;
+            };
+            // coordinate of this representative
+            int rr = full_path[t].first, cc = full_path[t].second;
+            char Dch2 = dir_char[D];
+            if (!can_move_char(rr,cc,Dch2)) {
+                // invalid move: replace with stop
+                D = 4; Dch2 = dir_char[D];
+                A = C_unused2;
+                Snew = q;
+            }
+            // clamp Snew
+            if (Snew < 0) Snew = 0;
+            if (Snew >= Q2) Snew = Q2-1;
+            cout << c << " " << q << " " << A << " " << Snew << " " << dir_char[D] << endl;
+        }
     }
 
     return 0;
