@@ -1,0 +1,49 @@
+# General
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+*.tmp
+*~
+*.swp
+
+# Compiled objects and executables
+*.o
+*.obj
+*.so
+*.a
+*.dll
+*.exe
+a.out
+main
+
+# Build directories
+/build/
+/bin/
+/obj/
+/dist/
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Python
+__pycache__/
+*.pyc
+
+# Local contest input/output and temporary files
+*.txt
+*.out
+
+# Other
+*.class
+node_modules/
+
+# Ignore OS-specific files
+ehthumbs.db
+Icon
+
+# keep vendor (e.g., ac-library) tracked; do not ignore vendor/
