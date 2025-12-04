@@ -35,22 +35,5 @@ int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
-    string S;cin>>S;
-    vector<pair<char,ll>> cnt;
-
-    for(int i=0;i<S.size();i++){
-        ll c=1;
-        while(i+1 < S.size() && S[i] == S[i+1])i++,c++;
-        cnt.push_back({S[i],c});
-    }
-
-    ll ans=0;
-
-    for(int i=0;i<cnt.size()-1;i++){
-        if(cnt[i].first+1==cnt[i+1].first){
-            ans+=min(cnt[i].second,cnt[i+1].second);
-        }
-    }
-
-    cout<<ans<<endl;
+    
 }

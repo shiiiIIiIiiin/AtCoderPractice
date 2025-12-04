@@ -32,23 +32,29 @@ ll dx[] = { 1, 0, -1, 0 }, dy[] = { 0, 1, 0, -1 };
 const ll INF = LLONG_MAX / 2;
 
 int main() {
-    cin.tie(nullptr);
-    ios::sync_with_stdio(false);
+    
+    ll N,M;cin>>N>>M;
+    //k桁の数字であってMで割ったあまりがｒのものがいくつあるかだけわかればOK
 
-    string S;cin>>S;
-    vector<pair<char,ll>> cnt;
+    vector<vector<ll>> cnt(11,vector<ll>());
+    vector<ll> A(N);
+    for(int i=0;i<N;i++)cin>>A[i];
+    sort(A.begin(),A.end());
 
-    for(int i=0;i<S.size();i++){
-        ll c=1;
-        while(i+1 < S.size() && S[i] == S[i+1])i++,c++;
-        cnt.push_back({S[i],c});
+    for(int i=0;i<N;i++){
+        cnt[to_string(A[i]).size()].push_back(A[i]);
     }
 
     ll ans=0;
 
-    for(int i=0;i<cnt.size()-1;i++){
-        if(cnt[i].first+1==cnt[i+1].first){
-            ans+=min(cnt[i].second,cnt[i+1].second);
+    for(ll i=1;i<11;i++)for(ll j=1;j<11;j++){
+        map<ll,ll> mpi,mpj;
+
+        for(int k=0;k<cnt[i].size();k++)mpi[(cnt[i][k]*modpow(10LL,j,M))%M]++;
+        for(int k=0;k<cnt[j].size();k++)mpj[cnt[j][k]%M]++;
+
+        for(auto [r,c]:mpi){
+            ans+=c*mpj[(M-r)%M];
         }
     }
 
