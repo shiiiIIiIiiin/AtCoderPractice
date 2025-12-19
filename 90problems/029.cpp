@@ -35,13 +35,5 @@ int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
-    int W,B;cin>>W>>B;
-
-    for(int i=0;i<1000000;i++){
-        if(W*1000<i*B){
-            cout<<i<<endl;
-            return 0;
-        }
-    }
     
 }

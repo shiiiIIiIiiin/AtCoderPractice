@@ -35,5 +35,17 @@ int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
+    cout<<fixed<<setprecision(10);
+
+    int N,M;cin>>N>>M;
+    vector<pair<ll,ll>> cnt(M+1,{0,0});
+
+    for(int i=0;i<N;i++){
+        ll a,b;cin>>a>>b;
+        cnt[a].first+=b;
+        cnt[a].second++;
+    }
+
+    for(int i=1;i<=M;i++)cout<<double(cnt[i].first)/cnt[i].second<<endl;
     
 }

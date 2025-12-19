@@ -35,5 +35,34 @@ int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
+    int T;cin>>T;
+
+    for(;T--;){
+        ll N,H;cin>>N>>H;
+        
+        ll pl=H,pr=H;//pl以上pr以下に存在することが可能
+        vector<ll> t(N+1,0),l(N+1,0),u(N+1,0);
+        for(int i=0;i<N;i++)cin>>t[i+1]>>l[i+1]>>u[i+1];
+
+        bool can=true;
+
+        for(int i=1;i<=N;i++){
+            ll time=t[i]-t[i-1];
+
+            if((pr<l[i]||u[i]<pl)&&min(labs(pr-l[i]),labs(pl-u[i]))>time){
+                can=false;
+                break;
+            }
+
+            pl-=time;
+            pr+=time;
+
+            pl=max(l[i],pl);
+            pr=min(u[i],pr);
+        }
+
+        cout<<(can ? "Yes":"No")<<endl;
+
+    }
     
 }
