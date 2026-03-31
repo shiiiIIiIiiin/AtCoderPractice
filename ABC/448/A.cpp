@@ -2,7 +2,7 @@
 #include <atcoder/all>
 using namespace std;
 using namespace atcoder;
-using ll = long long;
+using ll=long long;
 
 const ll MOD = 998244353;
 const ll MOD2 = 1'000'000'007;
@@ -34,9 +34,16 @@ const ll INF = LLONG_MAX / 2;
 //cin.tie(nullptr);
 //ios::sync_with_stdio(false);
 
-
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
-    
+
+    int N, X; cin >> N >> X;
+    vector<int> A(N);
+
+    for (int i = 0; i < N; i++) {
+        int a; cin >> a;
+        if (a < X)X = a, cout << 1 << endl;
+        else cout << 0 << endl;
+    }
 }

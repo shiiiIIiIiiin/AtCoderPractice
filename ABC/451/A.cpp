@@ -38,5 +38,7 @@ const ll INF = LLONG_MAX / 2;
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
-    
+
+    string S; cin >> S;
+    cout << (S.size() % 5 == 0 ? "Yes" : "No") << endl;
 }

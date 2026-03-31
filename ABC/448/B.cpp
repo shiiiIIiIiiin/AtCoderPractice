@@ -38,5 +38,26 @@ const ll INF = LLONG_MAX / 2;
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
-    
+
+    int N, M; cin >> N >> M;
+    vector<int> C(M + 1);
+    for (int i = 1; i <= M; i++)cin >> C[i];
+
+    vector<int> A(N + 1), B(N + 1);
+    for (int i = 1; i <= N; i++)cin >> A[i] >> B[i];
+
+    int ans = 0;
+
+    for (int i = 1; i <= N; i++) {
+        if (C[A[i]] >= B[i]) {
+            ans += B[i];
+            C[A[i]] -= B[i];
+        }
+        else {
+            ans += C[A[i]];
+            C[A[i]] = 0;
+        }
+    }
+
+    cout << ans << endl;
 }

@@ -2,7 +2,7 @@
 #include <atcoder/all>
 using namespace std;
 using namespace atcoder;
-using ll = long long;
+using ll=long long;
 
 const ll MOD = 998244353;
 const ll MOD2 = 1'000'000'007;
@@ -31,12 +31,10 @@ long long modpow(long long a, long long n, long long mod) {
 ll dx[] = { 1, 0, -1, 0 }, dy[] = { 0, 1, 0, -1 };
 const ll INF = LLONG_MAX / 2;
 
-//cin.tie(nullptr);
-//ios::sync_with_stdio(false);
-
-
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
-    
+
+    int A,B;cin>>A>>B;
+    cout<<12*A+B<<endl;
 }

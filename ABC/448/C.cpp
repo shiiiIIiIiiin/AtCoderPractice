@@ -38,5 +38,31 @@ const ll INF = LLONG_MAX / 2;
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
-    
+
+    int N, Q; cin >> N >> Q;
+    vector<pair<int, int>> P(N);
+    for (int i = 0; i < N; i++) {
+        cin >> P[i].first;
+        P[i].second = i + 1;
+    }
+
+    sort(P.begin(), P.end());
+    for (int i = 0; i < N - 6; i++)P.pop_back();
+
+
+    for (; Q--;) {
+        int K; cin >> K;
+        set<int> B;
+        for (int i = 0; i < K; i++) {
+            int b; cin >> b;
+            B.insert(b);
+        }
+
+        for (int i = 0; i < P.size(); i++) {
+            if (!B.count(P[i].second)) {
+                cout << P[i].first << endl;
+                break;
+            }
+        }
+    }
 }

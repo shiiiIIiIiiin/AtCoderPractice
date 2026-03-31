@@ -47,3 +47,6 @@ ehthumbs.db
 Icon
 
 # keep vendor (e.g., ac-library) tracked; do not ignore vendor/
+
+# oj が生成するサンプルテストケース
+**/test/
