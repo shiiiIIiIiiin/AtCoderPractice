@@ -1,0 +1,124 @@
+//#define _GLIBCXX_DEBUG
+
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <climits>
+#include <algorithm>
+#include <map>
+#include <set>
+#include <iterator>
+#include <unordered_map>
+#include <stack>
+#include <string>
+#include <cmath>
+#include <iomanip>
+#include <deque>
+#include <unordered_set>
+#include <locale>
+#include <random>
+
+using namespace std;
+using ll = long long;
+
+const ll MOD = 998244353;
+const ll MOD2 = 1'000'000'007;
+
+long long modinv(long long a, long long m) {
+    long long b = m, u = 1, v = 0;
+    while (b) {
+        long long t = a / b;
+        a -= t * b; swap(a, b);
+        u -= t * v; swap(u, v);
+    }
+    u %= m; if (u < 0) u += m;
+    return u;
+}
+
+long long modpow(long long a, long long n, long long mod) {
+    long long res = 1;
+    while (n > 0) {
+        if (n & 1) res = res * a % mod;
+        a = a * a % mod;
+        n >>= 1;
+    }
+    return res;
+}
+
+
+class UnionFind {
+public:
+    vector<ll> siz, par;
+    UnionFind(ll n) {
+        siz.assign(n, 1);
+        par.assign(n, -1);
+    }
+    ll root(ll x) {
+        return par[x] == -1 ? x : par[x] = root(par[x]);
+    }
+    void unite(ll x, ll y) {
+        ll rx = root(x), ry = root(y);
+        if (rx == ry) return;
+        if (siz[rx] < siz[ry]) {
+            par[rx] = ry;
+            siz[ry] += siz[rx];
+        }
+        else {
+            par[ry] = rx;
+            siz[rx] += siz[ry];
+        }
+    }
+    bool same(ll x, ll y) {
+        return root(x) == root(y);
+    }
+};
+
+int dx[] = { 1, 0, -1, 0 }, dy[] = { 0, 1, 0, -1 };
+
+const ll INF = LLONG_MAX / 2;
+
+//cin.tie(nullptr);
+//ios::sync_with_stdio(false);
+
+int main() {
+    ll N, M; cin >> N >> M;
+    vector<tuple<ll, ll, ll>> P(M);
+    for (int i = 0; i < M; i++)cin >> get<0>(P[i]) >> get<1>(P[i]) >> get<2>(P[i]);
+
+    vector<vector<pair<ll,ll>>> G(N + 1);
+
+    for (int i = 0; i < M; i++) {
+        auto [x, y, c] = P[i];
+        G[x].push_back({ y,c });
+    }
+
+    vector<ll> cur(N + 1, INF), ans(N + 1, -1);
+
+    priority_queue<pair<ll, ll>, vector<pair<ll, ll>>, greater<pair<ll, ll>>> pq;
+    pq.push({ 0,get<1>(P[0]) });
+    ans[get<1>(P[0])] = 0;
+
+    while (!pq.empty()) {
+        auto [cost, pos] = pq.top(); pq.pop();
+
+        ans[pos] = cost;
+
+        if (pos == get<0>(P[0])) {
+            cout << cost + get<2>(P[0]) << endl;
+            return 0;
+        }
+
+        for (int i = 0; i < G[pos].size(); i++) {
+            auto [nex, c] = G[pos][i];
+            if (ans[nex] != -1)continue;
+            
+            if (cur[nex] > cost + c) {
+                cur[nex] = cost + c;
+                pq.push({ cost + c,nex });
+            }
+        }
+    }
+
+    cout << -1 << endl;
+
+}
