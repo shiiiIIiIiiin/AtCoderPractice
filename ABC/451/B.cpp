@@ -39,4 +39,14 @@ int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
+    int N, M; cin >> N >> M;
+    vector<int> cnt(M + 1), cnt2(M + 1);
+
+    for (int i = 0; i < N; i++) {
+        int a, b; cin >> a >> b;
+        cnt[a]++;
+        cnt2[b]++;
+    }
+
+    for (int i = 1; i <= M; i++)cout << cnt2[i] - cnt[i] << endl;
 }

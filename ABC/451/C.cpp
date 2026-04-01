@@ -39,4 +39,19 @@ int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
+    int Q; cin >> Q;
+    priority_queue<int, vector<int>, greater<int>> pq;
+
+    for (; Q--;) {
+        int t, h; cin >> t >> h;
+
+        if (t == 1) {
+            pq.push(h);
+            cout << pq.size() << endl;
+        }
+        else {
+            while (!pq.empty() && pq.top() <= h)pq.pop();
+            cout << pq.size() << endl;
+        }
+    }
 }
