@@ -31,9 +31,27 @@ long long modpow(long long a, long long n, long long mod) {
 ll dx[] = { 1, 0, -1, 0 }, dy[] = { 0, 1, 0, -1 };
 const ll INF = LLONG_MAX / 2;
 
+//cin.tie(nullptr);
+//ios::sync_with_stdio(false);
+
 
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
-    
+
+    int N; cin >> N;
+    vector<bool> used(N + 1);
+    vector<int> A(N + 1);
+    for (int i = 1; i <= N; i++)cin >> A[i];
+
+    for (int i = 1; i <= N; i++) {
+        if (used[i])continue;
+        used[A[i]] = true;
+    }
+
+    vector<int> ans;
+    for (int i = 1; i <= N; i++)if (!used[i])ans.push_back(i);
+
+    cout << ans.size() << endl;
+    for (auto v : ans)cout << v << " ";
 }

@@ -31,9 +31,32 @@ long long modpow(long long a, long long n, long long mod) {
 ll dx[] = { 1, 0, -1, 0 }, dy[] = { 0, 1, 0, -1 };
 const ll INF = LLONG_MAX / 2;
 
+//cin.tie(nullptr);
+//ios::sync_with_stdio(false);
 
 int main() {
-    cin.tie(nullptr);
-    ios::sync_with_stdio(false);
-    
+    int N, M; cin >> N >> M;
+    dsu uf(N + 1);
+
+    int ans1 = 0, ans2 = N;//環状になっているもの、なっていないもの
+
+    for (; M--;) {
+        int a, c;
+        char b, d;
+        cin >> a >> b >> c >> d;
+
+        //bとdいる？？
+
+        if (uf.same(a, c)) {
+            //環が完成する
+            ans1++;
+            ans2--;
+        }
+        else {
+            uf.merge(a, c);
+            ans2--;
+        }
+    }
+
+    cout << ans1 << " " << ans2 << endl;
 }

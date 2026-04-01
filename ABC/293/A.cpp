@@ -31,9 +31,18 @@ long long modpow(long long a, long long n, long long mod) {
 ll dx[] = { 1, 0, -1, 0 }, dy[] = { 0, 1, 0, -1 };
 const ll INF = LLONG_MAX / 2;
 
+//cin.tie(nullptr);
+//ios::sync_with_stdio(false);
+
 
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
-    
+
+    string S; cin >> S;
+    for (int i = 0; i < S.size() / 2; i++) {
+        swap(S[2 * i], S[2 * i + 1]);
+    }
+
+    cout << S << endl;
 }
