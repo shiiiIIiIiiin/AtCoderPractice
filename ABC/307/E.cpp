@@ -31,35 +31,31 @@ long long modpow(long long a, long long n, long long mod) {
 ll dx[] = { 1, 0, -1, 0 }, dy[] = { 0, 1, 0, -1 };
 const ll INF = LLONG_MAX / 2;
 
-int H, W;
-
-bool check(int s, int t, vector<string>& A, vector<string>& B) {
-    bool res = true;
-
-    for (int i = 0; i < H; i++)for (int j = 0; j < W; j++) {
-        if (A[i][j] != B[(i + s) % H][(j + t) % W])res = false;
-    }
-
-    return res;
-}
-
 
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
-    cin >> H >> W;
-    vector<string> A(H), B(H);
-    for (int i = 0; i < H; i++)cin >> A[i];
-    for (int i = 0; i < H; i++)cin >> B[i];
+    ll N, M; cin >> N >> M;
+    vector<vector<ll>> dp(2, vector<ll>(N));
 
-    for (int s = 0; s < 40; s++)for (int t = 0; t < 40; t++) {
-        //縦シフトs回、横シフトt回を行う
-        if (check(s, t, A, B)) {
-            cout << "Yes" << endl;
-            return 0;
-        }
+    /*
+    dp[0][n]:=n人目までルール通りに決めたとき、n人目が1人目と同じ数を持っている場合の数
+    dp[1][n]:=n人目までルール通りに決めたとき、n人目が1人目と異なる数を持っている場合の数
+
+    dp[0][n]=dp[1][n-1]
+    dp[1][n]=dp[0][n-1]+(M-2)dp[1][n-1]
+    */
+
+    dp[0][0] = M;
+    dp[1][0] = 0;
+
+    for (int n = 1; n < N; n++) {
+        dp[0][n] = dp[1][n - 1];
+        dp[1][n] = (M - 1) * dp[0][n - 1] + (M - 2) * dp[1][n - 1];
+
+        dp[1][n] %= MOD;
     }
 
-    cout << "No" << endl;
+    cout << dp[1][N - 1] << endl;
 }

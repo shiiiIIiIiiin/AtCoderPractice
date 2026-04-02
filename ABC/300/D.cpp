@@ -1,85 +1,11 @@
-//#define _GLIBCXX_DEBUG
-
-#include <iostream>
-#include <vector>
-#include <queue>
-#include <climits>
-#include <algorithm>
-#include <map>
-#include <set>
-#include <iterator>
-#include <unordered_map>
-#include <stack>
-#include <string>
-#include <cmath>
-#include <iomanip>
-#include <deque>
-#include <unordered_set>
-
+#include <bits/stdc++.h>
+#include <atcoder/all>
 using namespace std;
+using namespace atcoder;
 using ll = long long;
 
 const ll MOD = 998244353;
 const ll MOD2 = 1'000'000'007;
-
-class SegTree {
-public:
-    vector<ll> dat;
-    ll siz = 1;
-
-    SegTree(ll n) {
-        while (siz < n) siz *= 2;
-        dat.resize(2 * siz, -LLONG_MAX);
-    }
-
-    void update(int id, ll x) {
-        id += siz;
-        dat[id] = x;
-        while (id != 0) {
-            id /= 2;
-            dat[id] = max(dat[2 * id], dat[2 * id + 1]);
-        }
-    }
-
-    ll getval(int id) {
-        return dat[id + siz];
-    }
-
-    ll getmax(ll L, ll R, ll a, ll b, ll u) {
-        if (b <= L || R <= a) return -LLONG_MAX / 2;
-        if (L <= a && b <= R) return dat[u];
-        ll m = (a + b) / 2;
-        return max(getmax(L, R, a, m, 2 * u),
-            getmax(L, R, m, b, 2 * u + 1));
-    }
-};
-
-class UnionFind {
-public:
-    vector<int> siz, par;
-    UnionFind(int n) {
-        siz.assign(n, 1);
-        par.assign(n, -1);
-    }
-    int root(int x) {
-        return par[x] == -1 ? x : par[x] = root(par[x]);
-    }
-    void unite(int x, int y) {
-        int rx = root(x), ry = root(y);
-        if (rx == ry) return;
-        if (siz[rx] < siz[ry]) {
-            par[rx] = ry;
-            siz[ry] += siz[rx];
-        }
-        else {
-            par[ry] = rx;
-            siz[rx] += siz[ry];
-        }
-    }
-    bool same(int x, int y) {
-        return root(x) == root(y);
-    }
-};
 
 long long modinv(long long a, long long m) {
     long long b = m, u = 1, v = 0;
@@ -102,65 +28,47 @@ long long modpow(long long a, long long n, long long mod) {
     return res;
 }
 
-int dx[] = { 1, 0, -1, 0 }, dy[] = { 0, 1, 0, -1 };
-
-//ios::sync_with_stdio(false);
-//cin.tie(nullptr);
-
+ll dx[] = { 1, 0, -1, 0 }, dy[] = { 0, 1, 0, -1 };
+const ll INF = LLONG_MAX / 2;
 
 
 int main() {
-    ios::sync_with_stdio(false);
     cin.tie(nullptr);
-
+    ios::sync_with_stdio(false);
 
     ll N; cin >> N;
-    //a^5<Nである　これは全探索できる
-    //a^2*b^3<N である　これも全探索できる？
-    //c^2=N/(a^2*b) であり、cが整数になるかは二分探索とか？
-
-    //まず、10^6までの素数を全列挙することにする
-
-    
-    vector<bool> is_prime(1000010, true);
+    vector<ll> primes;
+    vector<bool> is_prime(1e6 + 10, true);
 
     is_prime[0] = is_prime[1] = false;
 
     for (ll i = 2; i < is_prime.size(); i++) {
-        if (is_prime[i]) {
-            for (ll j = i * 2; j < is_prime.size(); j += i)is_prime[j] = false;
-        }
+        if (!is_prime[i])continue;
+        primes.push_back(i);
+        for (ll j = 2 * i; j < is_prime.size(); j += i)is_prime[j] = false;
     }
 
-    vector<ll> primes;
-    for (ll i = 2; i < is_prime.size(); i++)if (is_prime[i])primes.push_back(i);
+    //cout << primes.size() << endl; 78499が出力された
 
-    ll n = primes.size();
+    /*
+    aを全探索する？→a^5<N より、a<N^(1/5)の範囲を全探索すればいい
+    */
+
     ll ans = 0;
 
-    
-    for (ll i = 0; i < n; i++) {
+    for (int i = 0; i < primes.size(); i++) {
         ll a = primes[i];
-        if (a * a * a * a * a > N)break;//全列挙終わり
-        
-        for (ll j = i + 1; j < n; j++) {
+        if (a * a * a * a * a >= N)break;
+        for (int j = i + 1; j < primes.size(); j++) {
             ll b = primes[j];
             if (a * a * b * b * b >= N)break;
-           
-            
-            for (ll k = j + 1; k < n; k++) {
+            for (int k = j + 1; k < primes.size(); k++) {
                 ll c = primes[k];
-
                 if (a * a * b * c * c > N)break;
-
                 ans++;
             }
-
         }
     }
 
     cout << ans << endl;
-    
-    
-    
 }

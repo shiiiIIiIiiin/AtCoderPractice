@@ -1,24 +1,7 @@
-//#define _GLIBCXX_DEBUG
-
-#include <iostream>
-#include <vector>
-#include <queue>
-#include <climits>
-#include <algorithm>
-#include <map>
-#include <set>
-#include <iterator>
-#include <unordered_map>
-#include <stack>
-#include <string>
-#include <cmath>
-#include <iomanip>
-#include <deque>
-#include <unordered_set>
-#include <locale>
-#include <random>
-
+#include <bits/stdc++.h>
+#include <atcoder/all>
 using namespace std;
+using namespace atcoder;
 using ll = long long;
 
 const ll MOD = 998244353;
@@ -45,48 +28,23 @@ long long modpow(long long a, long long n, long long mod) {
     return res;
 }
 
-
-class UnionFind {
-public:
-    vector<ll> siz, par;
-    UnionFind(ll n) {
-        siz.assign(n, 1);
-        par.assign(n, -1);
-    }
-    ll root(ll x) {
-        return par[x] == -1 ? x : par[x] = root(par[x]);
-    }
-    void unite(ll x, ll y) {
-        ll rx = root(x), ry = root(y);
-        if (rx == ry) return;
-        if (siz[rx] < siz[ry]) {
-            par[rx] = ry;
-            siz[ry] += siz[rx];
-        }
-        else {
-            par[ry] = rx;
-            siz[rx] += siz[ry];
-        }
-    }
-    bool same(ll x, ll y) {
-        return root(x) == root(y);
-    }
-};
-
-int dx[] = { 1, 0, -1, 0 }, dy[] = { 0, 1, 0, -1 };
-
+ll dx[] = { 1, 0, -1, 0 }, dy[] = { 0, 1, 0, -1 };
 const ll INF = LLONG_MAX / 2;
 
-//cin.tie(nullptr);
-//ios::sync_with_stdio(false);
 
 int main() {
-    int N; cin >> N;
-    vector<ll> ans(N);
-    for (int i = 0; i < 7 * N; i++) {
-        ll A; cin >> A;
-        ans[i / 7] += A;
-    }
+    cin.tie(nullptr);
+    ios::sync_with_stdio(false);
 
-    for (int i = 0; i < N; i++)cout << ans[i] << " ";
+    int N; cin >> N;
+
+    ll ans = 0;
+    for (int i = 0; i < 7 * N; i++) {
+        ll a; cin >> a;
+        ans += a;
+        if ((i + 1) % 7 == 0) {
+            cout << ans << " ";
+            ans = 0;
+        }
+    }
 }
