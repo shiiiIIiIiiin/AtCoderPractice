@@ -36,6 +36,26 @@ int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
-    int X, Y; cin >> X >> Y;
-    cout << max(0, (Y - X + 9) / 10) << endl;
+    vector<ll> cnt(500010);
+    string S; cin >> S;
+    int N = S.size();
+
+    ll c = 0;
+
+    for (int i = N - 1; i >= 0; i--) {
+        c += S[N - (i + 1)] - '0';
+        cnt[i] = c;
+    }
+
+    string ans = "";
+    for (int i = 0; i < cnt.size() - 1; i++) {
+        cnt[i + 1] += cnt[i] / 10;
+        ans += to_string(cnt[i] % 10);
+    }
+
+    while (ans.back() == '0' && ans.size() != 1)ans.pop_back();
+
+    reverse(ans.begin(), ans.end());
+
+    cout << ans << endl;
 }

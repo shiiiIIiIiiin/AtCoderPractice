@@ -36,6 +36,23 @@ int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
-    int X, Y; cin >> X >> Y;
-    cout << max(0, (Y - X + 9) / 10) << endl;
+    //作れる中央値は連続している（未証明）
+    //作れる最小の中央値はAの中央値
+    //作れる最大の中央値はBの中央値
+
+    int N; cin >> N;
+    vector<ll> A(N), B(N);
+    for (int i = 0; i < N; i++)cin >> A[i] >> B[i];
+
+    sort(A.begin(), A.end());
+    sort(B.begin(), B.end());
+
+    if (N % 2 == 0) {
+        ll m = A[N / 2 - 1] + A[N / 2], M = B[N / 2 - 1] + B[N / 2];
+        cout << M - m + 1 << endl;
+    }
+    else {
+        ll m = A[N / 2], M = B[N / 2];
+        cout << M - m + 1 << endl;
+    }
 }

@@ -36,6 +36,21 @@ int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
-    int X, Y; cin >> X >> Y;
-    cout << max(0, (Y - X + 9) / 10) << endl;
+    int H, W; cin >> H >> W;
+    vector<vector<int>> ans(H, vector<int>(W, 0));
+
+    for (int i = 0; i < H; i++) {
+        ans[i][0] = 1;
+        ans[i][W - 1] = 1;
+    }
+
+    for (int j = 0; j < W; j++) {
+        ans[0][j] = 1;
+        ans[H - 1][j] = 1;
+    }
+
+    for (int i = 0; i < H; i++) {
+        for (int j = 0; j < W; j++)cout << (ans[i][j] == 0 ? '.' : '#');
+        cout << endl;
+    }
 }

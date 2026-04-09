@@ -36,6 +36,15 @@ int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
-    int X, Y; cin >> X >> Y;
-    cout << max(0, (Y - X + 9) / 10) << endl;
+    int M, D; cin >> M >> D;
+    vector<int> a = { 1,3,5,7,9 }, b = { 7,3,5,7,9 };
+    
+    for (int i = 0; i < 5; i++) {
+        if (a[i] == M && b[i] == D) {
+            cout << "Yes";
+            return 0;
+        }
+    }
+
+    cout << "No";
 }

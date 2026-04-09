@@ -36,6 +36,22 @@ int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
-    int X, Y; cin >> X >> Y;
-    cout << max(0, (Y - X + 9) / 10) << endl;
+    //dp[n][s]:=n個目まで決めたとき、合計がsになる個数
+
+    vector<vector<ll>> dp(3010, vector<ll>(3010, 0));
+    dp[0][0] = 1;
+
+    ll N, S; cin >> N >> S;
+    vector<ll> A(N + 1);
+    for (int i = 1; i <= N; i++)cin >> A[i];
+
+    for (int n = 1; n <= N; n++) {
+        for (int s = 0; s <= S; s++) {
+            dp[n][s] = 2 * dp[n - 1][s];
+            if (s - A[n] >= 0)dp[n][s] += dp[n - 1][s - A[n]];
+            dp[n][s] %= MOD;
+        }
+    }
+
+    cout << dp[N][S] << endl;
 }

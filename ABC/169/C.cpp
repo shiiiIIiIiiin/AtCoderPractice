@@ -1,24 +1,7 @@
-//#define _GLIBCXX_DEBUG
-
-#include <iostream>
-#include <vector>
-#include <queue>
-#include <climits>
-#include <algorithm>
-#include <map>
-#include <set>
-#include <iterator>
-#include <unordered_map>
-#include <stack>
-#include <string>
-#include <cmath>
-#include <iomanip>
-#include <deque>
-#include <unordered_set>
-#include <locale>
-#include <random>
-
+#include <bits/stdc++.h>
+#include <atcoder/all>
 using namespace std;
+using namespace atcoder;
 using ll = long long;
 
 const ll MOD = 998244353;
@@ -45,15 +28,26 @@ long long modpow(long long a, long long n, long long mod) {
     return res;
 }
 
-
-int dx[] = { 1, 0, -1, 0 }, dy[] = { 0, 1, 0, -1 };
-
+ll dx[] = { 1, 0, -1, 0 }, dy[] = { 0, 1, 0, -1 };
 const ll INF = LLONG_MAX / 2;
 
-//cin.tie(nullptr);
-//ios::sync_with_stdio(false);
 
 int main() {
-    int X; cin >> X;
-    cout << (X % 100 == 0 && X != 0 ? "Yes" : "No");
+    cin.tie(nullptr);
+    ios::sync_with_stdio(false);
+
+    ll A; string B; cin >> A >> B;
+
+    string t = "";
+    for (auto c : B) {
+        if (c == '.') {
+            continue;
+        }
+        t += c;
+    }
+
+    ll b = stoll(t);
+
+    ll ans = A * b / 100;
+    cout << ans << endl;
 }

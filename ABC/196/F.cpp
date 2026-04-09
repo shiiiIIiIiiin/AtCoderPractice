@@ -31,11 +31,32 @@ long long modpow(long long a, long long n, long long mod) {
 ll dx[] = { 1, 0, -1, 0 }, dy[] = { 0, 1, 0, -1 };
 const ll INF = LLONG_MAX / 2;
 
+using mint = modint998244353;
 
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
-    int X, Y; cin >> X >> Y;
-    cout << max(0, (Y - X + 9) / 10) << endl;
+    string S, T; cin >> S >> T;
+    int N = S.size(), M = T.size();
+    vector<mint> s1(N), t1(M), s0(N), t0(M);
+
+    for (int i = 0; i < N; i++) {
+        s1[i] = S[i] == '1';
+        s0[i] = S[i] == '0';
+    }
+
+    for (int i = 0; i < M; i++) {
+        t1[i] = T[M - 1 - i] == '1';
+        t0[i] = T[M - 1 - i] == '0';
+    }
+
+    vector<mint> res1 = convolution(s1, t1), res0 = convolution(s0, t0);
+    ll ans = 1e7;
+    for (int i = 0; i + M <= N; i++) {
+        ans = min(ans, (ll)(M - res1[i + M - 1].val() - res0[i + M - 1].val()));
+    }
+
+    cout << ans << endl;
+
 }

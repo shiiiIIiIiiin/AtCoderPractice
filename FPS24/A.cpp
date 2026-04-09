@@ -32,10 +32,36 @@ ll dx[] = { 1, 0, -1, 0 }, dy[] = { 0, 1, 0, -1 };
 const ll INF = LLONG_MAX / 2;
 
 
+vector<ll> nnn(1e6 + 10, 1);
+
+ll nCr(ll n, ll r) {
+    if (n < r)return 0;
+    return ((nnn[n] * modinv(nnn[n - r], MOD)) % MOD *modinv(nnn[r], MOD)) % MOD;
+}
+
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
-    int X, Y; cin >> X >> Y;
-    cout << max(0, (Y - X + 9) / 10) << endl;
+    ll D, N, ans = 0;
+    cin >> D >> N;
+
+    /*
+     [x^N](x+x^3+x^4+x^6)^D が答え
+    */
+
+    for (ll i = 1; i < nnn.size(); i++) {
+        nnn[i] = nnn[i - 1] * i;
+        nnn[i] %= MOD;
+    }
+
+    
+    for (int i = 0; i <= N - D; i++) {
+        if (i % 2 != 0)continue;
+        if ((N - D - i) % 3 != 0)continue;
+        ans += nCr(D, i / 2) * nCr(D, (N - D - i) / 3);
+        ans %= MOD;
+    }
+
+    cout << ans << endl;
 }

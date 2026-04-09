@@ -31,11 +31,24 @@ long long modpow(long long a, long long n, long long mod) {
 ll dx[] = { 1, 0, -1, 0 }, dy[] = { 0, 1, 0, -1 };
 const ll INF = LLONG_MAX / 2;
 
+// 逆元階乗を前計算する
+vector<ll> nnn(2e6 + 10, 1), inn(2e6 + 10, 1);
+
+void precompute() {
+    for (int i = 1; i < nnn.size(); i++) nnn[i] = (nnn[i - 1] * i) % MOD;
+    inn[nnn.size() - 1] = modpow(nnn.back(), MOD - 2, MOD); // フェルマーの小定理
+    for (int i = nnn.size() - 2; i >= 0; i--) inn[i] = (inn[i + 1] * (i + 1)) % MOD;
+}
+
+ll nCr(ll n, ll r) {
+    if (r < 0 || n < r) return 0;
+    return (((nnn[n] * inn[r]) % MOD) * inn[n - r]) % MOD;
+}
 
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
+    precompute();
 
-    int X, Y; cin >> X >> Y;
-    cout << max(0, (Y - X + 9) / 10) << endl;
+    
 }

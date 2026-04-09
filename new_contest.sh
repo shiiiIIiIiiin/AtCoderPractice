@@ -34,5 +34,7 @@ for PROB in A B C D E F G; do
     (cd "$TARGET" && "$OJ" d "https://atcoder.jp/contests/abc${NUM_LOWER}/tasks/abc${NUM_LOWER}_${PROB_LOWER}" --directory "test/${PROB_LOWER}" 2>&1 | grep -E "SUCCESS|ERROR|WARNING.*not found")
 done
 
+git -C "$SCRIPT_DIR" add "ABC/$NUM/"
+
 echo ""
 echo "Done: ABC/$NUM/  (A.cpp ~ G.cpp + samples)"

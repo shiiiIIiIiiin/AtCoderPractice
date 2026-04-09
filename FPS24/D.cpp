@@ -31,39 +31,42 @@ long long modpow(long long a, long long n, long long mod) {
 ll dx[] = { 1, 0, -1, 0 }, dy[] = { 0, 1, 0, -1 };
 const ll INF = LLONG_MAX / 2;
 
+// 逆元階乗を前計算する
+vector<ll> nnn(2e6 + 10, 1), inn(2e6 + 10, 1);
 
-vector<ll> cnt;
+void precompute() {
+    for (int i = 1; i < nnn.size(); i++) nnn[i] = (nnn[i - 1] * i) % MOD;
+    inn[nnn.size() - 1] = modpow(nnn.back(), MOD - 2, MOD); // フェルマーの小定理
+    for (int i = nnn.size() - 2; i >= 0; i--) inn[i] = (inn[i + 1] * (i + 1)) % MOD;
+}
 
-void dfs(int idx, ll pos, vector<vector<ll>>& A) {
-    if (idx == A.size()) {
-        cnt.push_back(pos);
-        return;
-    }
-
-    for (auto v : A[idx]) {
-        if (pos > 2e18 / v)continue;
-        dfs(idx + 1, pos * v, A);
-    }
+ll nCr(ll n, ll r) {
+    if (r < 0 || n < r) return 0;
+    return (((nnn[n] * inn[r]) % MOD) * inn[n - r]) % MOD;
 }
 
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
-    ll N, X; cin >> N >> X;
+    precompute();
 
-    vector<vector<ll>> A(N);
-    for (int i = 0; i < N; i++) {
-        int L; cin >> L;
-        A[i].resize(L);
-        for (int j = 0; j < L; j++)cin >> A[i][j];
+    ll N, M; cin >> N >> M;
+
+    if (N == 1) {
+        cout << M + 1 << endl;
+        return 0;
     }
 
-    ll pos = 1;
-    dfs(0, pos, A);
+    ll ans = 0;
 
-    int ans = 0;
-    for (auto v : cnt)ans += (v == X);
+    for (ll i = 0; i <= M - N + 1; i++) {
+        ans += nCr(i + N, N) * nCr(M - i - 1, N - 2) * ((M + N + 1 - i) % 2 == 0 ? 1 : -1);
+        ans += MOD;
+        ans %= MOD;
+    }
 
+    ans *= nnn[N];
+    ans %= MOD;
     cout << ans << endl;
 }

@@ -36,6 +36,26 @@ int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
-    int X, Y; cin >> X >> Y;
-    cout << max(0, (Y - X + 9) / 10) << endl;
+    int N; cin >> N;
+    vector<ll> A(N);
+    for (int i = 0; i < N; i++) {
+        cin >> A[i];
+        if (A[i] == 0) {
+            cout << 0 << endl;
+            return 0;
+        }
+    }
+
+    ll p = 1, t = 1'000'000'000'000'000'000LL;
+
+    for (int i = 0; i < N; i++) {
+        if (p > t / A[i]) {
+            cout << -1;
+            return 0;
+        }
+
+        p *= A[i];
+    }
+
+    cout << p << endl;
 }

@@ -36,6 +36,6 @@ int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
-    int X, Y; cin >> X >> Y;
-    cout << max(0, (Y - X + 9) / 10) << endl;
+    int A, B; cin >> A >> B;
+    cout << A * B << endl;
 }

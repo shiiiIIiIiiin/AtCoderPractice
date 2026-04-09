@@ -36,6 +36,40 @@ int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
-    int X, Y; cin >> X >> Y;
-    cout << max(0, (Y - X + 9) / 10) << endl;
+    ll N; cin >> N;
+    map<ll, ll> mp;
+
+    vector<bool> is_prime(2e6, true);
+    is_prime[0] = is_prime[1] = false;
+    vector<ll> primes;
+
+    for (ll i = 2; i < is_prime.size(); i++) {
+        if (is_prime[i]) {
+            primes.push_back(i);
+            for (ll j = 2 * i; j < is_prime.size(); j += i)is_prime[j] = false;
+        }
+    }
+
+    for (int i = 0; i < primes.size(); i++) {
+        ll p = primes[i];
+
+        while (N % p == 0) {
+            N /= p;
+            mp[p]++;
+        }
+
+    }
+
+    if (N != 1)mp[N] = 1;
+
+    ll ans = 0;
+
+    for (auto [p, c] : mp) {
+        // n(n + 1) / 2がcを超えない最大のnをansに足す
+        int n = 0;
+        while (n * (n + 1) / 2 <= c)n++;
+        ans += n - 1;
+    }
+
+    cout << ans << endl;
 }
