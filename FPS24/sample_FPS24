@@ -3,6 +3,7 @@
 using namespace std;
 using namespace atcoder;
 using ll = long long;
+using mint = modint998244353;
 
 const ll MOD = 998244353;
 const ll MOD2 = 1'000'000'007;
