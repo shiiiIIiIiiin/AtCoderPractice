@@ -43,6 +43,49 @@ op ABC 451      # 移動だけ（ファイルは開かない）
 
 ---
 
+## ojのログイン設定（コンテスト中のサンプル取得に必要）
+
+コンテスト中の問題はログインが必要。`oj login` はCloudflareに弾かれるため、クッキーを手動で設定する。
+
+### 手順
+
+1. ブラウザでAtCoderにログイン
+2. F12 → Application → Cookies → `https://atcoder.jp`
+3. `REVEL_SESSION` の Value をコピー
+4. Git Bash で以下を実行（`<値>` を置き換える）：
+
+```bash
+python3 - << 'EOF'
+import http.cookiejar, time, os
+
+path = os.path.expandvars(r"C:\Users\kimura\AppData\Local\online-judge-tools\online-judge-tools\cookie.jar")
+jar = http.cookiejar.LWPCookieJar(path)
+
+cookie = http.cookiejar.Cookie(
+    version=0, name="REVEL_SESSION", value="<値>",
+    port=None, port_specified=False,
+    domain=".atcoder.jp", domain_specified=True, domain_initial_dot=True,
+    path="/", path_specified=True,
+    secure=False, expires=int(time.time()) + 60*60*24*30,
+    discard=False, comment=None, comment_url=None, rest={}
+)
+jar.set_cookie(cookie)
+jar.save(ignore_discard=True, ignore_expires=True)
+print("Done")
+EOF
+```
+
+5. 確認：
+
+```bash
+oj login --check https://atcoder.jp/
+# → [SUCCESS] You have already signed in. が出ればOK
+```
+
+クッキーの有効期限は数週間〜数ヶ月。切れたら同じ手順で更新する。
+
+---
+
 ## コンパイル方法
 
 リポジトリルート(`AtCoderPractice/`)から実行する場合：
