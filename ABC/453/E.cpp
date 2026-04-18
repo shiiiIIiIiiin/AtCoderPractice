@@ -36,5 +36,7 @@ int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
+    //チームAに所属する選手の人数を全探索する
+
     
 }

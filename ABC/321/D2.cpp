@@ -10,6 +10,7 @@ const ll MOD2 = 1'000'000'007;
 long long modinv(long long a, long long m) {
     long long b = m, u = 1, v = 0;
     while (b) {
+        
         long long t = a / b;
         a -= t * b; swap(a, b);
         u -= t * v; swap(u, v);
@@ -31,35 +32,32 @@ long long modpow(long long a, long long n, long long mod) {
 ll dx[] = { 1, 0, -1, 0 }, dy[] = { 0, 1, 0, -1 };
 const ll INF = LLONG_MAX / 2;
 
+
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
-    int N, K; cin >> N >> K;
-    string S; cin >> S;
+    ll N, M, P; cin >> N >> M >> P;
+    vector<ll> A(N), B(M);
+    for (int i = 0; i < N; i++)cin >> A[i];
+    for (int i = 0; i < M; i++)cin >> B[i];
 
-    vector<vector<int>> cnt(26);
+    sort(B.begin(), B.end());
+    ll ans = 0;
+    vector<ll> sum(M + 1);
+    for (int i = 1; i <= M; i++)sum[i] = sum[i - 1] + B[i - 1];
 
-    for (int i = 0; i < S.size(); i++)cnt[S[i] - 'a'].push_back(i);
+    for (int i = 0; i < N; i++) {
+        
+        /*主食をiとしたとき、
+        A[i] + B[l] <= Pとなるようなものに対してはA[i]+B[l]円
+        そうではないものに対してはP円にする
+　　　　　前半は二分探索、後半は累積和で高速に求めることができる
+        */
 
-    string ans = "";
-    int pos = -1;
-
-    while (ans.size() < K) {
-        for (int i = 0; i < 26; i++) {
-            //文字 'a'+i が使えるか調べる
-            auto it = upper_bound(cnt[i].begin(), cnt[i].end(), pos);
-
-            if (it == cnt[i].end())continue;
-
-            int nex = *it;
-
-            if (N - 1 - nex < K - ans.size() - 1)continue;
-            ans += char('a' + i);
-            pos = nex;
-
-            break;
-        }
+        ll r = upper_bound(B.begin(), B.end(), P - A[i]) - B.begin();
+        ans += P * (M - r);
+        ans += A[i] * r + sum[r];
     }
 
     cout << ans << endl;
