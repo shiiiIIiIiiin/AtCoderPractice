@@ -1,5 +1,3 @@
-//#define _GLIBCXX_DEBUG
-
 #include <bits/stdc++.h>
 #include <atcoder/all>
 using namespace std;

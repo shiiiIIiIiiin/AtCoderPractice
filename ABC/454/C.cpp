@@ -1,5 +1,3 @@
-//#define _GLIBCXX_DEBUG
-
 #include <bits/stdc++.h>
 #include <atcoder/all>
 using namespace std;
@@ -34,8 +32,36 @@ ll dx[] = { 1, 0, -1, 0 }, dy[] = { 0, 1, 0, -1 };
 const ll INF = LLONG_MAX / 2;
 
 
+void dfs(int pos, vector<bool>& visited, vector<vector<int>>& G) {
+    visited[pos] = true;
+
+    for (int i = 0; i < G[pos].size(); i++) {
+        int nex = G[pos][i];
+        if (visited[nex])continue;
+
+        dfs(nex, visited, G);
+    }
+}
+
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
+
+    int N, M; cin >> N >> M;
     
+    vector<vector<int>> G(N + 1);
+
+    for (int i = 0; i < M; i++) {
+        int a, b; cin >> a >> b;
+        G[a].push_back(b);
+    }
+
+    vector<bool> visited(N + 1);
+    
+    dfs(1, visited, G);
+
+    int ans = 0;
+    for (int i = 1; i <= N; i++)if (visited[i])ans++;
+
+    cout << ans << endl;
 }

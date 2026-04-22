@@ -1,5 +1,3 @@
-//#define _GLIBCXX_DEBUG
-
 #include <bits/stdc++.h>
 #include <atcoder/all>
 using namespace std;
@@ -33,9 +31,19 @@ long long modpow(long long a, long long n, long long mod) {
 ll dx[] = { 1, 0, -1, 0 }, dy[] = { 0, 1, 0, -1 };
 const ll INF = LLONG_MAX / 2;
 
+map<ll, ll> mp;
+
+ll f(ll N) {
+    if (N == 0)return 1;
+    if (mp[N] != 0)return mp[N];
+    return mp[N] = f(N / 2) + f(N / 3);
+}
 
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
-    
+
+    ll N; cin >> N;
+
+    cout << f(N) << endl;
 }

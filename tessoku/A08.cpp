@@ -1,5 +1,3 @@
-//#define _GLIBCXX_DEBUG
-
 #include <bits/stdc++.h>
 #include <atcoder/all>
 using namespace std;
@@ -37,5 +35,23 @@ const ll INF = LLONG_MAX / 2;
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
-    
+
+    int H, W; cin >> H >> W;
+    vector<vector<int>> X(H + 1, vector<int>(W + 1));
+    for (int i = 1; i <= H; i++)for (int j = 1; j <= W; j++)cin >> X[i][j];
+
+    for (int i = 0; i <= H; i++) {
+        for (int j = 1; j <= W; j++)X[i][j] += X[i][j - 1];
+    }
+
+    for (int j = 0; j <= W; j++) {
+        for (int i = 1; i <= H; i++)X[i][j] += X[i - 1][j];
+    }
+
+    int Q; cin >> Q;
+
+    for (; Q--;) {
+        int a, b, c, d; cin >> a >> b >> c >> d;
+        cout << X[c][d] - X[a - 1][d] - X[c][b - 1] + X[a - 1][b - 1] << endl;
+    }
 }

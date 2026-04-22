@@ -1,5 +1,3 @@
-//#define _GLIBCXX_DEBUG
-
 #include <bits/stdc++.h>
 #include <atcoder/all>
 using namespace std;
@@ -37,5 +35,17 @@ const ll INF = LLONG_MAX / 2;
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
-    
+
+    int N, X; cin >> N >> X;
+
+    for (int i = 0; i < N; i++) {
+        int a; cin >> a;
+
+        if (a == X) {
+            cout << "Yes";
+            return 0;
+        }
+    }
+
+    cout << "No";
 }

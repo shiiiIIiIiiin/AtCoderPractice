@@ -1,5 +1,3 @@
-//#define _GLIBCXX_DEBUG
-
 #include <bits/stdc++.h>
 #include <atcoder/all>
 using namespace std;
@@ -37,5 +35,19 @@ const ll INF = LLONG_MAX / 2;
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
-    
+
+    int N, D; cin >> D >> N;
+    vector<int> sum(D + 2);
+
+    for (int i = 0; i < N; i++) {
+        int l, r; cin >> l >> r;
+        sum[r + 1]--;
+        sum[l]++;
+    }
+
+    for (int i = 1; i <= D; i++) {
+        sum[i] += sum[i - 1];
+    }
+
+    for (int i = 1; i <= D; i++)cout << sum[i] << endl;
 }

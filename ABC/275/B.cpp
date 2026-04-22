@@ -1,10 +1,9 @@
-//#define _GLIBCXX_DEBUG
-
 #include <bits/stdc++.h>
 #include <atcoder/all>
 using namespace std;
 using namespace atcoder;
 using ll = long long;
+using mint = modint998244353;
 
 const ll MOD = 998244353;
 const ll MOD2 = 1'000'000'007;
@@ -37,5 +36,11 @@ const ll INF = LLONG_MAX / 2;
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
-    
+
+    ll a, b, c, d, e, f;
+    cin >> a >> b >> c >> d >> e >> f;
+
+    mint A = a, B = b, C = c, D = d, E = e, F = f;
+
+    cout << (A * B * C - D * E * F).val() << endl;
 }
