@@ -43,6 +43,54 @@ op ABC 451      # 移動だけ（ファイルは開かない）
 
 ---
 
+## AHCコンテストのセットアップ
+
+`~/.bashrc` に `new_ahc` 関数が登録されているので、Git Bash からどこでも使える。
+
+```bash
+new_ahc 056
+# または
+new_ahc ahc056
+```
+
+`AtCoderPractice/AHC/AHC056/` が作成され、以下の構成で自動生成される：
+
+```
+AHC056/
+├── problem/
+│   ├── statement.md   # 問題文（ビジュアライザURLリンク付き）
+│   └── images/        # 手動スクショを置く場所
+├── tools/             # vis.exe, gen.exe, in/, seeds.txt
+└── main.cpp           # 自分で作成（ルートに置く運用）
+```
+
+### ビジュアライザの使い方
+
+```bash
+cd AtCoderPractice/AHC/AHC056
+
+# テストケース生成
+./tools/gen.exe 0 > input.txt
+
+# 自分の解法を実行
+./main.exe < input.txt > output.txt
+
+# ビジュアライズ → vis.html が生成される
+./tools/vis.exe input.txt output.txt
+```
+
+Web版ビジュアライザのURLは `問題文.md` の「ツール」セクションに記載されている。
+
+### 依存パッケージ（初回のみ）
+
+```bash
+pip install requests beautifulsoup4
+```
+
+スクリプト本体: `scripts/fetch_ahc.py`
+
+---
+
 ## ojのログイン設定（コンテスト中のサンプル取得に必要）
 
 コンテスト中の問題はログインが必要。`oj login` はCloudflareに弾かれるため、クッキーを手動で設定する。

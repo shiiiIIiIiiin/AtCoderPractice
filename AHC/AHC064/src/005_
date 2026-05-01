@@ -1,0 +1,203 @@
+#include <iostream>
+#include <vector>
+#include <deque>
+#include <algorithm>
+
+using namespace std;
+
+struct Command {
+    int type, i, j, k;
+};
+
+int R = 10;
+vector<deque<int>> dep(10), sid(10);
+vector<Command> all_moves;
+
+void apply_move(int type, int i, int j, int k) {
+    if (type == 0) {
+        vector<int> block;
+        for (int x = 0; x < k; ++x) {
+            block.push_back(dep[i].back());
+            dep[i].pop_back();
+        }
+        reverse(block.begin(), block.end());
+        for (int x = k - 1; x >= 0; --x) {
+            sid[j].push_front(block[x]);
+        }
+    } else {
+        for (int x = 0; x < k; ++x) {
+            dep[i].push_back(sid[j].front());
+            sid[j].pop_front();
+        }
+    }
+}
+
+void record_move(int type, int i, int j, int k) {
+    apply_move(type, i, j, k);
+    all_moves.push_back({type, i, j, k});
+}
+
+pair<int, int> find_car(int id) {
+    for (int j = 0; j < 10; ++j) {
+        for (int d = 0; d < sid[j].size(); ++d) {
+            if (sid[j][d] == id) return {j, d};
+        }
+    }
+    return {-1, -1};
+}
+
+vector<vector<Command>> compress(const vector<Command>& moves) {
+    vector<vector<Command>> packed;
+    vector<int> last_dep(10, -1), last_sid(10, -1);
+
+    for (const auto& m : moves) {
+        int start_t = max(last_dep[m.i], last_sid[m.j]) + 1;
+        int t = start_t;
+        while (true) {
+            if (t >= (int)packed.size()) packed.resize(t + 1);
+            bool ok = true;
+            for (const auto& exist : packed[t]) {
+                if (exist.i == m.i || exist.j == m.j) { ok = false; break; }
+                if (1LL * (exist.i - m.i) * (exist.j - m.j) < 0) { ok = false; break; }
+            }
+            if (ok) {
+                packed[t].push_back(m);
+                last_dep[m.i] = last_sid[m.j] = t;
+                break;
+            }
+            t++;
+        }
+    }
+    return packed;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    if (!(cin >> R)) return 0;
+    for (int i = 0; i < R; ++i) {
+        for (int j = 0; j < 10; ++j) {
+            int id; cin >> id;
+            dep[i].push_back(id);
+        }
+    }
+
+    // ★ 復活した Phase 1: 目的地の待避線へ直接振り分ける
+    // （これも1台ずつですが、最後のcompressで一斉並列移動に圧縮されます）
+    bool changed = true;
+    while (changed) {
+        changed = false;
+        for (int i = 0; i < 10; ++i) {
+            if (!dep[i].empty()) {
+                int id = dep[i].back();
+                int target_sid = id / 10; // 本来行くべきグループへ送る
+                record_move(0, i, target_sid, 1);
+                changed = true;
+            }
+        }
+    }
+
+    // Phase 2: 塊（Run）を意識した容量安全な配置
+    int c = 0;
+    // 各出発線が「次に欲しい数字」を管理（0, 10, 20...）
+    vector<int> next_c(10);
+    for (int i = 0; i < 10; ++i) next_c[i] = i * 10;
+
+    bool active = true;
+    while (active) {
+        active = false;
+        
+        // 10個の出発線を「横並びで」1回ずつ進める
+        for (int target_dep = 0; target_dep < 10; ++target_dep) {
+            int c = next_c[target_dep];
+            if (c >= target_dep * 10 + 10) continue; // この出発線は完成済み
+            
+            active = true;
+            auto [sj, depth] = find_car(c);
+
+            // 塊（Run）の判定
+            int block_size = 1;
+            while (c + block_size < target_dep * 10 + 10 && 
+                   depth + block_size < sid[sj].size() && 
+                   sid[sj][depth + block_size] == c + block_size) {
+                block_size++;
+            }
+
+            // 仮想容量の計算
+            vector<int> virt_sz(10);
+            vector<int> virt_top(10, -1);
+            for (int k = 0; k < 10; ++k) {
+                virt_sz[k] = dep[k].size();
+                if (!dep[k].empty()) virt_top[k] = dep[k].back();
+            }
+
+            // 退避先の決定
+            vector<pair<int, int>> scratches;
+            int remain = depth;
+            
+            while (remain > 0) {
+                int best_k = -1;
+                int best_score = -9999;
+                int car_to_move = sid[sj][remain - 1]; 
+                
+                for (int k = 0; k < 10; ++k) {
+                    if (k == target_dep) continue;
+                    
+                    int cap = 15 - virt_sz[k]; 
+                    if (cap <= 0) continue;
+
+                    int score = cap; 
+                    
+                    if (virt_top[k] != -1) {
+                        if (virt_top[k] == car_to_move - 1 || virt_top[k] == car_to_move + 1) {
+                            score += 1000;
+                        }
+                    }
+                    
+                    if (score > best_score) {
+                        best_score = score;
+                        best_k = k;
+                    }
+                }
+                
+                int take = 1; 
+                if (scratches.empty() || scratches.back().first != best_k) {
+                    scratches.push_back({best_k, take});
+                } else {
+                    scratches.back().second += take;
+                }
+                
+                virt_sz[best_k] += take;
+                virt_top[best_k] = car_to_move;
+                
+                remain -= take;
+            }
+
+            // 1. 退避
+            for (auto& s : scratches) record_move(1, s.first, sj, s.second);
+            // 2. 本命を配置（塊で一気に）
+            record_move(1, target_dep, sj, block_size);
+            // 3. 退避を復元
+            for (int i = (int)scratches.size() - 1; i >= 0; --i) {
+                record_move(0, scratches[i].first, sj, scratches[i].second);
+            }
+
+            // この出発線の「次に欲しい数字」を更新
+            next_c[target_dep] += block_size; 
+        }
+    }
+
+    // ★ ここで全ての手順が「並列化（ガッチャンコ）」される
+    auto final_turns = compress(all_moves);
+
+    cout << final_turns.size() << "\n";
+    for (const auto& t_cmds : final_turns) {
+        cout << t_cmds.size() << "\n";
+        for (const auto& c : t_cmds) {
+            cout << c.type << " " << c.i << " " << c.j << " " << c.k << "\n";
+        }
+    }
+
+    return 0;
+}

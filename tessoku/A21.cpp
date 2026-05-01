@@ -35,5 +35,33 @@ const ll INF = LLONG_MAX / 2;
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
-    
+
+    //区間dpをする？
+    int N; cin >> N;
+    vector<int> P(N + 2, 0), A(N + 2, 0);
+    for (int i = 1; i <= N; i++)cin >> P[i] >> A[i];
+
+    vector<vector<ll>> dp(N + 1, vector<ll>(N + 2, 0));
+    //dp[l][r]:=[l,r]の区間を残した状態で得られる最大の得点
+
+    /*
+    幅の大きい順に求めることができる
+　　dp[l][r]=max(dp[l-1][r]+A[l-1],dp[l][r+1]+A[r+1])
+    */
+
+    dp[1][N] = 0;//width=Nの場合
+
+    for (int width = N - 1; width >= 0; width--) {
+        for (int l = 1; l + width <= N; l++) {
+            int r = l + width;
+            dp[l][r] = max(dp[l - 1][r] + (l <= P[l - 1] && P[l - 1] <= r ? A[l - 1] : 0), dp[l][r + 1] + (l <= P[r + 1] && P[r + 1] <= r ? A[r + 1] : 0));
+        }
+    }
+
+    ll ans = -1;
+
+    for (int i = 1; i <= N; i++)ans = max(ans, dp[i][i]);
+
+    cout << ans << endl;
+
 }

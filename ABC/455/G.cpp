@@ -38,19 +38,36 @@ int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
-    int s, a, b, x; cin >> s >> a >> b >> x;
-    int ans = 0;
+    string S; cin >> S;
+    int N = S.size();
+    vector<vector<bool>> is_cycle(N + 1, vector<bool>(N + 1, false));
+    vector<int> dp(N + 1);
+    dp[0] = -1;
 
-    while (x > 0) {
-        if (x >= a) {
-            ans += s * a;
-            x -= a + b;
-        }
-        else {
-            ans += s * x;
-            x = 0;
+    for (int width = 1; width <= N; width++) {
+        for (int l = 0; l + width - 1 < N; l++) {
+            int r = l + width - 1;
+
+            if (width == 1) {
+                is_cycle[l][r] = true;
+                continue;
+            }
+            else if (width == 2) {
+                is_cycle[l][r] = S[l] == S[r];
+                continue;
+            }
+
+            is_cycle[l][r] = S[l] == S[r] && is_cycle[l + 1][r - 1];
         }
     }
 
-    cout << ans << endl;
+    for (int i = 1; i <= N; i++) {
+        dp[i] = dp[i - 1] + 1;
+        for (int len = 1; len <= i; len++) {
+            if (is_cycle[i - len][i - 1])dp[i] = min(dp[i], dp[i - len] + 1);
+        }
+    }
+
+    cout << dp[N] << endl;
+
 }

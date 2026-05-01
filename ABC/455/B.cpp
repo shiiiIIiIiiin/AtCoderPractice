@@ -1,3 +1,5 @@
+//#define _GLIBCXX_DEBUG
+
 #include <bits/stdc++.h>
 #include <atcoder/all>
 using namespace std;
@@ -36,18 +38,28 @@ int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
-    int N, K; cin >> N >> K;
-    vector<int> A(N);
-    for (int i = 0; i < N; i++)cin >> A[i];
+    int H, W; cin >> H >> W;
+    vector<string> S(H + 1);
+    for (int i = 1; i <= H; i++) {
+        string t; cin >> t;
+        S[i] = "?" + t;
+    }
 
-    int r = 0;
-    ll ans = 0;
-    
-    for (int l = 0; l < N; l++) {
-        while (r < N && A[r] - A[l] <= K)r++;
-        ans += r - l - 1;
-        if (r == l)r++;
-        else{}
+    int ans = 0;
+
+    for (int h1 = 1; h1 <= H; h1++) {
+        for (int h2 = h1; h2 <= H; h2++) {
+            for (int w1 = 1; w1 <= W; w1++) {
+                for (int w2 = w1; w2 <= W; w2++) {
+                    bool res = true;
+                    for (int i = h1; i <= h2; i++)for (int j = w1; j <= w2; j++) {
+                        if (S[i][j] != S[h1 + h2 - i][w1 + w2 - j])res = false;
+                    }
+
+                    ans += res;
+                }
+            }
+        }
     }
 
     cout << ans << endl;

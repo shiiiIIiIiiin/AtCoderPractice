@@ -1,3 +1,5 @@
+//#define _GLIBCXX_DEBUG
+
 #include <bits/stdc++.h>
 #include <atcoder/all>
 using namespace std;
@@ -36,19 +38,30 @@ int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
-    int N, K; cin >> N >> K;
-    vector<int> A(N);
-    for (int i = 0; i < N; i++)cin >> A[i];
+    /*
+    ・a<bの場合は必ずc=aとなり条件に反する
+    ・a>bの場合は必ずc = a % b < b (< a) となり、a, b, cが必ず異なるという条件を満たす
 
-    int r = 0;
+    よって、以下の条件を満たす(a,b)をもとめたい
+    ・a > bである
+    ・aはbの倍数ではない(c!=0を満たすため)
+    ・1 <= a, b <= N
+    */
+
+    ll N; cin >> N;
+
+    /*
     ll ans = 0;
-    
-    for (int l = 0; l < N; l++) {
-        while (r < N && A[r] - A[l] <= K)r++;
-        ans += r - l - 1;
-        if (r == l)r++;
-        else{}
+    for (ll b = 1; b <= N; b++) {
+        ans += N - b - (N / b - 1);
     }
+    ↑これを高速化する
+    */
 
+    ll ans = N * N - N * (N + 1) / 2 + N;
+
+    //ここから、Σ[N/b]を引く
+    
     cout << ans << endl;
+
 }

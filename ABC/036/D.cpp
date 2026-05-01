@@ -1,3 +1,5 @@
+//#define _GLIBCXX_DEBUG
+
 #include <bits/stdc++.h>
 #include <atcoder/all>
 using namespace std;
@@ -36,19 +38,28 @@ int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
 
-    int N, K; cin >> N >> K;
-    vector<int> A(N);
-    for (int i = 0; i < N; i++)cin >> A[i];
+    ll N, W; cin >> N >> W;
+    vector<ll> v(N + 1), w(N + 1);
+    for (int i = 1; i <= N; i++)cin >> v[i] >> w[i];
 
-    int r = 0;
-    ll ans = 0;
-    
-    for (int l = 0; l < N; l++) {
-        while (r < N && A[r] - A[l] <= K)r++;
-        ans += r - l - 1;
-        if (r == l)r++;
-        else{}
+    bool can_nw = true;
+    for (int i = 1; i <= N; i++)if (w[i] > 1000)can_nw = false;
+
+    if (N <= 30) {
+        //半分全列挙を行う
+        vector<vector<pair<ll, ll>>> p(2);
+        for (int i = 1; i <= N; i++) {
+            p[i % 2 == 0].push_back({ v[i],w[i] });
+        }
+
+        
     }
+    else if (can_nw) {
+        //nとwのdpを行う
+        
+    }
+    else {
+        //nとvのdpを行う
 
-    cout << ans << endl;
+    }
 }

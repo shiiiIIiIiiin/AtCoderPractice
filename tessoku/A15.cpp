@@ -35,5 +35,35 @@ const ll INF = LLONG_MAX / 2;
 int main() {
     cin.tie(nullptr);
     ios::sync_with_stdio(false);
-    
+
+    int N; cin >> N;
+    vector<pair<int, int>> A(N);
+    for (int i = 0; i < N; i++) {
+        cin >> A[i].first;
+        A[i].second = i;
+    }
+
+    vector<int> ans(N, -1);
+
+    sort(A.begin(), A.end());
+
+    int cnt = 1;
+
+    for (int i = 0; i < N; i++) {
+        auto [v, id] = A[i];
+        if (i == 0) {
+            ans[id] = 1;
+            continue;
+        }
+
+        if (A[i].first == A[i - 1].first) {
+            ans[id] = cnt;
+        }
+        else {
+            cnt++;
+            ans[id] = cnt;
+        }
+    }
+
+    for (int i = 0; i < N; i++)cout << ans[i] << " ";
 }
