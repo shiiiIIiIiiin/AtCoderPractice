@@ -55,13 +55,14 @@ dl ARC190 a     # ARC190 の A のみ
 dl AWC13        # AWC0013 の A〜E 全問
 ```
 
-### 問題集（番号指定）
+### 問題集（番号指定 / 全問）
 
 ```bash
-dl EDPC 12      # EDPC 12問目 → test/l/ に保存
-dl TESSOKU 50   # 鉄則 50問目 → test/ax/ に保存
-dl TYPICAL90 45 # 典型90 45問目 → test/cl/ に保存
-dl FPS 10       # FPS 10問目 → test/j/ に保存
+dl EDPC         # EDPC 全26問をダウンロード
+dl EDPC 12      # EDPC 12問目のみ → test/l/ に保存
+dl TESSOKU 50   # 鉄則 50問目のみ → test/ax/ に保存
+dl TYPICAL90 45 # 典型90 45問目のみ → test/cl/ に保存
+dl FPS 10       # FPS 10問目のみ → test/j/ に保存
 ```
 
 問題番号 → フォルダ名の対応: 1=a, 2=b, ..., 26=z, 27=aa, 28=ab, ...
